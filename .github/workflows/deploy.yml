@@ -1,0 +1,68 @@
+name: Deploy to GitHub Pages
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# One in-flight deployment at a time; never cancel an in-progress one.
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: |
+            package-lock.json
+            webapp/package-lock.json
+
+      - name: Build site
+        run: make build
+
+      # elm-land emits absolute asset URLs (/main.css, /assets/…) which
+      # break when the site is served from a project-page subpath like
+      # /EveryAwesome/. Rewrite to document-relative URLs so it works at
+      # any base.
+      - name: Rewrite asset paths to be relative
+        run: |
+          sed -i \
+            -e 's|href="/main.css"|href="./main.css"|g' \
+            -e 's|src="/assets/|src="./assets/|g' \
+            webapp/dist/index.html
+
+      # SPA fallback: GitHub Pages serves 404.html for unknown paths.
+      # Cloning index.html means future deep links won't 404.
+      - name: Add SPA fallback
+        run: cp webapp/dist/index.html webapp/dist/404.html
+
+      # Disable Jekyll processing — our dist is already a static bundle.
+      - name: Disable Jekyll
+        run: touch webapp/dist/.nojekyll
+
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: webapp/dist
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4

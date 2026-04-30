@@ -1,9 +1,10 @@
 // Fetch the pre-built dataset and pass it to Elm as a flag.
-// /entries.json is served from webapp/static/entries.json.
+// Relative path so the app works under any base (root in dev,
+// /<repo>/ on GitHub Pages).
 export const flags = async () => {
-  const response = await fetch("/entries.json")
+  const response = await fetch("entries.json")
   if (!response.ok) {
-    throw new Error(`Failed to load /entries.json: ${response.status}`)
+    throw new Error(`Failed to load entries.json: ${response.status}`)
   }
   return await response.json()
 }
