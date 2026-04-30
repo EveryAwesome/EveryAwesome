@@ -1,6 +1,6 @@
 LISTS_JSON := data/lists.json
 
-.PHONY: all lists deps fetch fetch-all parse build dev clean help
+.PHONY: all lists deps fetch fetch-all parse css build dev test clean help
 
 help: ## Show available targets
 	@grep -E '^[a-zA-Z_-]+:.*##' $(MAKEFILE_LIST) \
@@ -48,6 +48,9 @@ build: parse css ## Build production site to webapp/dist
 
 dev: parse css ## Run dev server with hot reload
 	cd webapp && npx elm-land server
+
+test: deps ## Run parser tests
+	node --test scripts/*.test.js
 
 clean: ## Remove build artifacts and dependencies
 	rm -rf data/raw data/lists.json data/entries.json node_modules \

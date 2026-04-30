@@ -164,4 +164,8 @@ function main() {
   console.log(`\nWrote ${allEntries.length} entries across ${presentLists.length} lists → ${outPath}`);
 }
 
-main();
+if (require.main === module) {
+  main();
+}
+
+module.exports = { parseList, extractEntry, plainText };
