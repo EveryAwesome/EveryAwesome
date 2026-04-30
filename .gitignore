@@ -1,0 +1,10 @@
+data/raw/
+data/lists.json
+data/entries.json
+webapp/static/entries.json
+webapp/static/main.css
+webapp/dist/
+webapp/elm-stuff/
+webapp/node_modules/
+node_modules/
+.DS_Store

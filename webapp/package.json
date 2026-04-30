@@ -1,0 +1,13 @@
+{
+  "name": "everyawesome-webapp",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "css": "tailwindcss -i src/main.css -o static/main.css --minify",
+    "css:watch": "tailwindcss -i src/main.css -o static/main.css --watch"
+  },
+  "devDependencies": {
+    "@tailwindcss/cli": "^4.0.0",
+    "tailwindcss": "^4.0.0"
+  }
+}
