@@ -14,7 +14,6 @@ module.exports = [
   { id: "lego",               name: "Lego",               repo: "ad-si/awesome-lego" },
   { id: "makefile",           name: "Makefile",           repo: "ad-si/awesome-makefile" },
   { id: "music-production",   name: "Music Production",   repo: "ad-si/awesome-music-production" },
-  { id: "pencil",             name: "Pencil",             repo: "ad-si/awesome-pencil" },
   { id: "ray-tracing",        name: "Ray Tracing",        repo: "ad-si/awesome-ray-tracing" },
   { id: "scanning",           name: "Scanning",           repo: "ad-si/awesome-scanning" },
   { id: "sheet-music",        name: "Sheet Music",        repo: "ad-si/awesome-sheet-music" },
