@@ -22,7 +22,7 @@
       "script": []
     },
     "router": {
-      "useHashRouting": true
+      "useHashRouting": false
     },
     "proxy": null
   }

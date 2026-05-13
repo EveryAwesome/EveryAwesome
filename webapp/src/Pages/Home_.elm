@@ -16,13 +16,22 @@ import View exposing (View)
 
 
 page : Shared.Model -> Route () -> Page Model Msg
-page shared _ =
+page shared route =
     Page.new
-        { init = init
-        , update = update
+        { init = init route
+        , update = update route
         , subscriptions = \_ -> Sub.none
         , view = view shared
         }
+        |> Page.withOnQueryParameterChanged
+            { key = listsQueryKey
+            , onChange = ListsQueryChanged
+            }
+
+
+listsQueryKey : String
+listsQueryKey =
+    "lists"
 
 
 
@@ -54,18 +63,40 @@ type alias Model =
     }
 
 
-init : () -> ( Model, Effect Msg )
-init () =
+init : Route () -> () -> ( Model, Effect Msg )
+init route () =
     ( { rawQuery = ""
       , query = ""
       , debounceToken = 0
-      , selectedLists = Set.empty
+      , selectedLists = parseListsParam (Dict.get listsQueryKey route.query)
       , selectedCategories = Set.empty
       , selectedTags = Set.empty
       , visibleCount = maxVisibleEntries
       }
     , Effect.none
     )
+
+
+parseListsParam : Maybe String -> Set String
+parseListsParam param =
+    case param of
+        Nothing ->
+            Set.empty
+
+        Just s ->
+            s
+                |> String.split ","
+                |> List.filter (not << String.isEmpty)
+                |> Set.fromList
+
+
+encodeListsParam : Set String -> Dict String String -> Dict String String
+encodeListsParam selected query =
+    if Set.isEmpty selected then
+        Dict.remove listsQueryKey query
+
+    else
+        Dict.insert listsQueryKey (Set.toList selected |> String.join ",") query
 
 
 
@@ -80,10 +111,11 @@ type Msg
     | ToggleTag String
     | ClearFilters
     | ShowMore
+    | ListsQueryChanged { from : Maybe String, to : Maybe String }
 
 
-update : Msg -> Model -> ( Model, Effect Msg )
-update msg model =
+update : Route () -> Msg -> Model -> ( Model, Effect Msg )
+update route msg model =
     case msg of
         QueryChanged q ->
             let
@@ -104,12 +136,20 @@ update msg model =
                 ( model, Effect.none )
 
         ToggleList id ->
+            let
+                newSelected =
+                    toggle id model.selectedLists
+            in
             ( { model
-                | selectedLists = toggle id model.selectedLists
+                | selectedLists = newSelected
                 , selectedCategories = Set.empty
                 , visibleCount = maxVisibleEntries
               }
-            , Effect.none
+            , Effect.replaceRoute
+                { path = route.path
+                , query = encodeListsParam newSelected route.query
+                , hash = route.hash
+                }
             )
 
         ToggleCategory cat ->
@@ -132,11 +172,20 @@ update msg model =
                 , selectedTags = Set.empty
                 , visibleCount = maxVisibleEntries
               }
-            , Effect.none
+            , Effect.replaceRoute
+                { path = route.path
+                , query = Dict.remove listsQueryKey route.query
+                , hash = route.hash
+                }
             )
 
         ShowMore ->
             ( { model | visibleCount = model.visibleCount + maxVisibleEntries }
+            , Effect.none
+            )
+
+        ListsQueryChanged { to } ->
+            ( { model | selectedLists = parseListsParam to, visibleCount = maxVisibleEntries }
             , Effect.none
             )
 
